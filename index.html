@@ -2789,7 +2789,7 @@ function playDragHint(){
 }
 // 第一次看到「每日照顧」時示範一次，之後不再出現；使用者一碰就立刻停止
 (function(){
-  if(store.get("hintTour")) return;  // 教學改版：新教學每人再看一次
+  // 每次進入網站都示範一次（點任何地方就能跳過）
   if(!motionOK()) return;
   const card = $("petCard");
   let started = false;
@@ -2797,7 +2797,7 @@ function playDragHint(){
   card.addEventListener("pointerdown", stopHint, true);
   const start = () => {
     if(started) return; started = true;
-    playDragHint().then(() => { store.set("hintTour", 1); try{ localStorage.removeItem(PREFIX + "hintDrag"); }catch(e){} card.removeEventListener("pointerdown", stopHint, true); });
+    playDragHint().then(() => { try{ localStorage.removeItem(PREFIX + "hintDrag"); localStorage.removeItem(PREFIX + "hintTour"); }catch(e){} card.removeEventListener("pointerdown", stopHint, true); });
   };
   const ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
   ready.then(() => {
