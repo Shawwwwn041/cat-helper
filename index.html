@@ -649,7 +649,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing !important;user-select:none;
   .handle:active{transform:scale(.9)}
 }
 .todo li.edit{gap:12px}
-@media (max-width:600px){
+/* 長週期提醒的表格欄位比較寬：820px 以下改成上下排列，避免撐出畫面 */
+@media (max-width:820px){
   .rcols{display:none}
   .rrow{grid-template-columns:1fr 1fr;grid-template-areas:"name stat" "cyc last" "next btn";gap:12px;padding:16px 0}
   .rrow .rname{grid-area:name;font-weight:600}
@@ -808,7 +809,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing !important;user-select:none;
 .ctx-item.armed{background:rgba(255,59,48,.14)}
 
 /* 第一次使用的拖曳示範 */
-.todo li.hinting{position:relative;z-index:4;background:#fff;border-radius:12px}
+.rrow.hinting,.todo li.hinting{position:relative;z-index:4;background:#fff;border-radius:12px}
+.rrow.hinting{padding-left:12px;padding-right:12px;margin:0 -12px}
 .hint-touch{position:absolute;top:50%;width:54px;height:54px;border-radius:50%;pointer-events:none;opacity:0;
   background:radial-gradient(circle,rgba(0,113,227,.38) 0 36%,rgba(0,113,227,.16) 37% 100%);box-shadow:0 0 0 2px rgba(0,113,227,.45),0 4px 14px rgba(0,113,227,.25)}
 
@@ -890,22 +892,161 @@ nav.tabs button.drag-over{color:var(--ink);font-weight:600}
 
 /* 示範進行中：所有區塊都不浮起、不改陰影，避免示範卡片抽動、旁邊的區塊被點亮 */
 body.touring .card,body.touring .card:hover,body.touring .card:focus-within{transform:none !important;z-index:auto}
-body.touring .card:not(#petCard):hover{box-shadow:0 2px 6px rgba(0,0,0,.025),0 8px 24px rgba(0,0,0,.05) !important}
-body.touring #petCard.spot{z-index:3}
-body.touring .band.spot-band > :not(#petCard){pointer-events:none}
+body.touring .card:not(.spot):hover{box-shadow:0 2px 6px rgba(0,0,0,.025),0 8px 24px rgba(0,0,0,.05) !important}
+body.touring .card.spot{z-index:3}
+body.touring .band.spot-band > :not(.spot){pointer-events:none}
+
+/* 卡片右上角的「?」：淡淡的玻璃小圓鈕，按了重播操作教學 */
+.help-btn{flex:none;display:inline-grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:50%;cursor:pointer;color:#86868b;
+  background:rgba(120,120,128,.1);transition:background .25s var(--ease),color .25s var(--ease),transform .25s var(--ease)}
+.help-btn:hover{background:rgba(120,120,128,.18);color:var(--ink)}
+.help-btn:active{transform:scale(.9)}
+.help-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.help-btn .help-ico{display:grid;place-items:center;line-height:0}
+body.touring .help-btn{opacity:.35;pointer-events:none}
+
+/* 減重時才展開的「目標體重」：高度平滑展開／收起 */
+.reveal{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .45s var(--ease),opacity .3s var(--ease),margin .45s var(--ease);margin-top:-14px}
+.reveal.open{grid-template-rows:1fr;opacity:1;margin-top:0}
+.reveal-in{min-height:0;overflow:hidden}
+#fTargetTip{margin-top:0}
+#fTargetTip.open{margin-top:2px}
+.flabel-row{display:flex;align-items:center;gap:6px}
+.flabel-row label{margin:0}
+.info-btn{display:inline-grid;place-items:center;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:transparent;color:#86868b;cursor:pointer;transition:color .2s var(--ease),background .2s var(--ease)}
+.info-btn:hover,.info-btn.on{color:var(--blue);background:rgba(0,113,227,.08)}
+.info-btn:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.tip{margin:0;padding:10px 12px;border-radius:10px;background:var(--soft);color:var(--muted);font-size:.84rem;line-height:1.6}
+@media (prefers-reduced-motion:reduce){.reveal{transition:none}}
+
+/* 食量計算：左右兩張卡片一樣高；右邊的注意事項貼齊卡片底部 */
+.calc-grid{align-items:stretch}
+.calc-grid .card.result{display:flex;flex-direction:column;gap:14px}
+.calc-grid .card.result > .note:last-child{margin-top:auto}
+/* 計算過程：自動換行，不出現捲軸 */
+.calc-grid .formula{white-space:pre-wrap;word-break:break-word;overflow:visible;line-height:1.75}
+
+/* ===== 頂部細條：大分頁列捲出畫面後，從上方滑入；捲回頂部時收起 ===== */
+:root{--lnav-h:52px}
+html{scroll-padding-top:calc(var(--lnav-h) + 12px)}
+.lnav{position:fixed;inset:0 0 auto;z-index:40;padding-top:env(safe-area-inset-top,0px);
+  background:rgba(251,251,253,.86);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  box-shadow:0 1px 0 rgba(0,0,0,.08);
+  transform:translate3d(0,-100%,0);opacity:0;visibility:hidden;
+  transition:transform .55s cubic-bezier(.28,.11,.32,1),opacity .4s cubic-bezier(.28,.11,.32,1),visibility 0s linear .55s;will-change:transform}
+.lnav.show{transform:translate3d(0,0,0);opacity:1;visibility:visible;transition:transform .55s cubic-bezier(.28,.11,.32,1),opacity .35s cubic-bezier(.28,.11,.32,1),visibility 0s}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.lnav{background:rgba(255,255,255,.96)}}
+.lnav-in{max-width:980px;margin:0 auto;height:var(--lnav-h);display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+/* 細條裡的東西：跟著細條滑入時，稍微晚一點、由下往上浮現，層次更柔和 */
+.lnav-brand,.lnav-tabs{opacity:0;transform:translate3d(0,6px,0);transition:opacity .3s cubic-bezier(.28,.11,.32,1),transform .3s cubic-bezier(.28,.11,.32,1)}
+.lnav.show .lnav-brand,.lnav.show .lnav-tabs{opacity:1;transform:none;transition:opacity .5s cubic-bezier(.28,.11,.32,1) .12s,transform .6s cubic-bezier(.28,.11,.32,1) .12s}
+.lnav.show .lnav-tabs{transition-delay:.18s}
+.lnav-brand{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 4px;margin-left:-4px;border:0;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer;font:inherit}
+.lnav-brand svg{width:22px;height:22px;flex:none;display:block}
+.lnav-name{font-family:var(--font-display);font-size:1.0625rem;font-weight:600;letter-spacing:-.005em;line-height:1;white-space:nowrap}
+.lnav-brand:hover .lnav-name{opacity:.72}
+.lnav-brand:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.lnav-tab:focus{outline:none}
+.lnav-tab:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(0,113,227,.35)}
+.lnav-tabs{position:relative;display:flex;align-items:center;padding:4px;border-radius:980px;background:rgba(120,120,128,.16);box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+/* 細條的滑塊：和大分頁列同一種玻璃質感 */
+.lnav-thumb{position:absolute;top:4px;bottom:4px;left:0;width:0;border-radius:980px;pointer-events:none;
+  background:linear-gradient(180deg,#fff,rgba(255,255,255,.88));
+  box-shadow:0 4px 14px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.10),inset 0 1px 0 #fff,inset 0 -1px 0 rgba(0,0,0,.04),inset 0 0 0 .5px rgba(0,0,0,.08);
+  transition:translate .45s cubic-bezier(.28,.11,.32,1),width .45s cubic-bezier(.28,.11,.32,1),scale .3s cubic-bezier(.28,.11,.32,1)}
+/* 按住拖動：滑塊微微放大、陰影加深，手放開再切到那一格 */
+.lnav-tabs{touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.lnav-tabs.thumb-drag .lnav-thumb{transition:scale .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s cubic-bezier(.28,.11,.32,1);scale:1.08;
+  box-shadow:0 10px 26px rgba(0,0,0,.20),0 3px 8px rgba(0,0,0,.10),inset 0 1px 0 #fff,inset 0 0 0 .5px rgba(0,0,0,.08)}
+.lnav-tabs.thumb-drag{background:rgba(120,120,128,.2);transition:background .25s}
+.lnav-tabs.thumb-drag .lnav-tab{transition:color .2s cubic-bezier(.28,.11,.32,1)}
+.lnav-tabs.thumb-drag .lnav-tab[aria-selected="true"]:not(.drag-over){color:var(--muted);font-weight:500}
+.lnav-tab.drag-over{color:var(--ink);font-weight:600}
+@media (prefers-reduced-motion:reduce){.lnav-tabs.thumb-drag .lnav-thumb{scale:1}}
+.lnav-thumb.no-anim{transition:none}
+.lnav-tab{position:relative;z-index:1;border:0;background:transparent;cursor:pointer;font:inherit;font-size:.8125rem;line-height:1;padding:8px 14px;border-radius:980px;color:var(--muted);font-weight:500;white-space:nowrap;transition:color .3s}
+.lnav-tab:hover{color:var(--ink)}
+.lnav-tab[aria-selected="true"]{color:var(--ink);font-weight:600}
+.lnav-tab:active{transform:scale(.95)}
+@media (max-width:600px){
+  :root{--lnav-h:48px}
+  /* 手機：只留置中的分頁膠囊；點目前所在的那一格回到頂部 */
+  .lnav-brand{display:none}
+  .lnav-in{justify-content:center;gap:0}
+  /* 膠囊拉長到幾乎整個寬度，五格平均分配 */
+  .lnav-tabs{flex:1;max-width:420px}
+  .lnav-tab{flex:1;text-align:center;padding-left:0 !important;padding-right:0 !important}
+  .lnav-tab{padding:8px 11px}
+}
+@media (max-width:360px){.lnav-tab{padding:8px 8px}}
+/* 平板直立等中間寬度：細條改用短標籤，放得下名稱和五個分頁 */
+@media (min-width:601px) and (max-width:820px){.lnav .tl{display:none}.lnav .ts{display:inline}}
+@media (prefers-reduced-motion:reduce){
+  .lnav,.lnav.show,.lnav-brand,.lnav-tabs,.lnav.show .lnav-brand,.lnav.show .lnav-tabs,.lnav-thumb{transition:none !important}
+}
+/* 黏住的配對結果卡片：讓出細條的高度 */
+.sticky{top:calc(env(safe-area-inset-top,0px) + var(--lnav-h) + 16px)}
+
+/* 很窄的手機（320–360px）：段落大標縮小一點，整句不會被擠出畫面 */
+@media (max-width:360px){.panel-head h2{font-size:1.6rem}.panel-head p{font-size:.9375rem}}
+#breeds .band,#breeds .toolbar{min-width:0;grid-template-columns:minmax(0,1fr)}
+.toolbar .chips{min-width:0}
+
+/* 長週期提醒標題列：標題靠左、「?」靠右，垂直置中 */
+.rem-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+
+/* 貓咪選單：每一列右邊的刪除鍵 */
+.pet-row{display:flex;align-items:center;gap:4px;overflow:hidden;transition:height .26s var(--ease),opacity .2s var(--ease)}
+.pet-row .pet-opt{flex:1;min-width:0}
+.pet-row.removing{height:0 !important;opacity:0}
+.pet-del{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:0;height:32px;min-width:32px;padding:0 8px;margin-right:4px;border:0;border-radius:980px;
+  background:transparent;color:#aeaeb2;cursor:pointer;font:inherit;line-height:1;
+  transition:background .25s var(--ease),color .25s var(--ease),padding .3s var(--ease),gap .3s var(--ease)}
+.pet-del .pd-ico{display:grid;place-items:center;line-height:0}
+.pet-del .pd-txt{max-width:0;opacity:0;overflow:hidden;white-space:nowrap;font-size:.8125rem;font-weight:600;transition:max-width .3s var(--ease),opacity .2s var(--ease)}
+.pet-del:hover{color:#ff3b30;background:rgba(255,59,48,.08)}
+.pet-del.armed{background:#ff3b30;color:#fff;padding:0 12px;gap:4px}
+.pet-del.armed .pd-txt{max-width:3em;opacity:1}
+.pet-del:active{transform:scale(.94)}
+.pet-del:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.pet-menu.stay{animation:none !important}
+@media (prefers-reduced-motion:reduce){.pet-row,.pet-del,.pet-del .pd-txt{transition:none}}
+
+/* 品種百科：同一排的卡片一樣高；特徵分數和「完整介紹」對齊在每張卡片的下半部，介紹文字長短不影響整齊 */
+#breedGrid{align-items:stretch}
+#breedGrid .breed{display:flex;flex-direction:column;gap:12px}
+#breedGrid .breed > p{margin:0}
+#breedGrid .breed .meters{margin-top:auto}
 
 /* 教學聚光燈 */
 .hint-veil{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);opacity:0;transition:opacity .45s var(--ease);cursor:pointer}
 .hint-veil.on{opacity:1}
 .band.spot-band{position:relative;z-index:51}
-#petCard.spot{position:relative;z-index:3;transition:box-shadow .45s var(--ease) !important;box-shadow:0 0 0 100vmax rgba(0,0,0,0) !important}
-#petCard.spot.spot-on{box-shadow:0 0 0 100vmax rgba(0,0,0,.45),0 0 0 6px rgba(255,255,255,.18) !important}
+
+.card.spot{position:relative;z-index:3;transition:box-shadow .45s var(--ease) !important;box-shadow:0 0 0 100vmax rgba(0,0,0,0) !important}
+
+.card.spot.spot-on{box-shadow:0 0 0 100vmax rgba(0,0,0,.45),0 0 0 6px rgba(255,255,255,.18) !important}
 .pet-switch.hint-host{position:relative}
 .pet-switch.hint-host .hint-touch{top:50%}
 .ctx-menu.hint-menu{pointer-events:none;background:rgba(255,255,255,.94) !important}
 </style>
 </head>
 <body>
+
+<!-- 捲過大標題後出現的頂部細條（像蘋果產品頁的 local nav） -->
+<div class="lnav" id="lnav" aria-hidden="true" inert>
+  <div class="lnav-in">
+    <button type="button" class="lnav-brand" id="lnavBrand" aria-label="回到頂部"><svg viewBox="6 1 56 60" aria-hidden="true" id="lnavLogo"></svg><span class="lnav-name">貓咪照顧小幫手</span></button>
+    <div class="lnav-tabs" id="lnavTabs" role="tablist" aria-label="功能分頁"><span class="lnav-thumb" aria-hidden="true"></span>
+      <button type="button" class="lnav-tab" data-tab="care"><span class="tl">每日照顧</span><span class="ts">照顧</span></button>
+      <button type="button" class="lnav-tab" data-tab="food"><span class="tl">食量計算</span><span class="ts">食量</span></button>
+      <button type="button" class="lnav-tab" data-tab="match"><span class="tl">AI 品種配對</span><span class="ts">配對</span></button>
+      <button type="button" class="lnav-tab" data-tab="breeds"><span class="tl">品種百科</span><span class="ts">百科</span></button>
+      <button type="button" class="lnav-tab" data-tab="about"><span class="tl">關於本站</span><span class="ts">關於</span></button>
+    </div>
+  </div>
+</div>
 
 <div class="wrap">
   <header class="hero">
@@ -933,7 +1074,7 @@ body.touring .band.spot-band > :not(#petCard){pointer-events:none}
     <div class="band">
     <div class="card pet-card" id="petCard"></div>
     <div class="card rem-card" id="remCard">
-      <div class="rem-head"><h3 class="sub">長週期提醒</h3></div>
+      <div class="rem-head"><h3 class="sub">長週期提醒</h3><button type="button" class="help-btn" id="remHelp" aria-label="重播操作教學" title="操作教學"></button></div>
       <div class="rcols" aria-hidden="true"><span>項目</span><span>週期</span><span>上次完成</span><span>下次</span><span>狀態</span><span></span></div>
       <ul class="rlist" id="remList"></ul>
     </div>
@@ -947,7 +1088,7 @@ body.touring .band.spot-band > :not(#petCard){pointer-events:none}
       <p><span class="nw">依體重與生活狀態，</span><span class="nw">算出牠每天該吃的量<span class="hang">。</span></span></p>
     </div></div>
     <div class="band">
-    <div class="grid2">
+    <div class="grid2 calc-grid">
       <form class="card form" id="foodForm" novalidate>
         <div class="field">
           <label for="fWeight">體重（公斤）</label>
@@ -964,6 +1105,13 @@ body.touring .band.spot-band > :not(#petCard){pointer-events:none}
             <option value="senior">老貓（7 歲以上）</option>
           </select>
         </div>
+        <div class="reveal" id="fTargetWrap" aria-hidden="true"><div class="reveal-in">
+        <div class="field">
+          <div class="flabel-row"><label for="fTarget">目標體重（公斤）</label><button type="button" class="info-btn" id="fTargetInfo" aria-label="減重注意事項" aria-expanded="false" tabindex="-1"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></svg></button></div>
+          <div class="stepper"><button type="button" class="step" data-for="fTarget" data-dir="-1" aria-label="減少" tabindex="-1">−</button><input id="fTarget" type="number" inputmode="decimal" min="0.5" max="15" step="0.1" value="4.7" tabindex="-1"><button type="button" class="step" data-for="fTarget" data-dir="1" aria-label="增加" tabindex="-1">+</button></div>
+          <div class="reveal" id="fTargetTip"><div class="reveal-in"><p class="tip">每週減掉的體重，最好不超過目前體重的 1–2%。減太快可能引發脂肪肝；理想體重請讓獸醫評估。</p></div></div>
+        </div>
+        </div></div>
         <div class="field">
           <label for="fKcal">飼料熱量（每 100 公克的 kcal）</label>
           <div class="stepper"><button type="button" class="step" data-for="fKcal" data-dir="-1" aria-label="減少">−</button><input id="fKcal" type="number" inputmode="numeric" min="50" max="600" step="1" value="380"><button type="button" class="step" data-for="fKcal" data-dir="1" aria-label="增加">+</button></div>
@@ -1593,7 +1741,91 @@ function show(id){
   document.querySelectorAll("section.panel").forEach(s => s.hidden = s.id!==id);
   moveTabThumb(id, !moveTabThumb.ready); moveTabThumb.ready = true;
   placeChaser(id);
+  syncLnav(id);
 }
+/* ===== 頂部細條 ===== */
+const lnav = $("lnav"), lnavTabs = [...document.querySelectorAll(".lnav-tab")], lnavThumb = document.querySelector(".lnav-thumb");
+function syncLnav(id, instant){
+  const btn = lnavTabs.find(b => b.dataset.tab === id); if(!btn) return;
+  lnavTabs.forEach(b => b.setAttribute("aria-selected", String(b === btn)));
+  // 細條藏起來時量不到寬度，等它出現再補位
+  if(!lnav.classList.contains("show") && !instant){ syncLnav.pending = id; return; }
+  if(instant) lnavThumb.classList.add("no-anim");
+  lnavThumb.style.width = btn.offsetWidth + "px";
+  lnavThumb.style.translate = `${btn.offsetLeft}px 0`;
+  if(instant) requestAnimationFrame(() => requestAnimationFrame(() => lnavThumb.classList.remove("no-anim")));
+}
+function setLnav(on){
+  if(lnav.classList.contains("show") === on) return;
+  if(on){
+    lnav.removeAttribute("inert"); lnav.setAttribute("aria-hidden", "false");
+    const cur = (tabBtns.find(b => b.getAttribute("aria-selected") === "true") || tabBtns[0]).dataset.tab;
+    lnav.classList.add("show"); syncLnav(cur, true);
+  }else{
+    lnav.classList.remove("show"); lnav.setAttribute("aria-hidden", "true"); lnav.setAttribute("inert", "");
+    if(lnav.contains(document.activeElement)) document.activeElement.blur();
+  }
+}
+// 大分頁列整條捲到細條底下時，細條出現；捲回來時收起
+(function(){
+  const big = document.getElementById("tabsNav");
+  const io = new IntersectionObserver(([e]) => setLnav(!e.isIntersecting && e.boundingClientRect.top < 0),
+    {rootMargin:`-${parseInt(getComputedStyle(document.documentElement).getPropertyValue("--lnav-h")) || 52}px 0px 0px 0px`});
+  io.observe(big);
+})();
+// 點細條的分頁：切換內容，並把新內容的開頭帶到細條下方
+function lnavGo(id){
+  show(id); store.set("tab", id);
+  // 用區塊本身的位置（不受進場動畫位移影響），讓標題剛好落在細條下方
+  const sec = document.getElementById(id);
+  const y = sec.getBoundingClientRect().top + scrollY - lnav.offsetHeight;
+  window.scrollTo({top:Math.max(0, y), behavior:motionOK() ? "smooth" : "auto"});
+}
+const lnavBar = $("lnavTabs");
+lnavTabs.forEach(b => b.addEventListener("click", () => {
+  if(lnavBar._suppress) return;
+  // 再點一次目前所在的分頁：回到最頂端（像 iPhone 點兩下分頁回頂部）
+  if(b.getAttribute("aria-selected") === "true"){ window.scrollTo({top:0, behavior:motionOK() ? "smooth" : "auto"}); return; }
+  lnavGo(b.dataset.tab);
+}));
+// 細條的分頁也能按住左右滑（和大分頁列同樣的手感）
+(function(){
+  let drag = null;
+  const tabAt = x => { let best = lnavTabs[0], d = Infinity; lnavTabs.forEach(b => { const c = b.offsetLeft + b.offsetWidth / 2, dd = Math.abs(c - x); if(dd < d){ d = dd; best = b; } }); return best; };
+  lnavBar.addEventListener("pointerdown", e => {
+    if(e.button > 0 || !e.isPrimary) return;
+    drag = {id:e.pointerId, sx:e.clientX, left:lnavBar.getBoundingClientRect().left, moving:false, over:null};
+  });
+  lnavBar.addEventListener("pointermove", e => {
+    if(!drag || e.pointerId !== drag.id) return;
+    if(!drag.moving){
+      if(Math.abs(e.clientX - drag.sx) < 6) return;
+      drag.moving = true;
+      try{ lnavBar.setPointerCapture(e.pointerId); }catch(err){}
+      lnavBar.classList.add("thumb-drag"); document.body.classList.add("is-dragging");
+    }
+    const x = e.clientX - drag.left, b = tabAt(x), w = b.offsetWidth;
+    const first = lnavTabs[0], last = lnavTabs[lnavTabs.length - 1];
+    const min = first.offsetLeft, max = last.offsetLeft + last.offsetWidth - w;
+    lnavThumb.style.width = w + "px";
+    lnavThumb.style.translate = `${Math.max(min, Math.min(max, x - w / 2))}px 0`;
+    if(drag.over !== b){ lnavTabs.forEach(t => t.classList.toggle("drag-over", t === b)); drag.over = b; try{ if(navigator.vibrate) navigator.vibrate(6); }catch(err){} }
+  });
+  const end = e => {
+    if(!drag || e.pointerId !== drag.id) return;
+    const d = drag; drag = null;
+    if(!d.moving) return;
+    lnavBar.classList.remove("thumb-drag"); document.body.classList.remove("is-dragging");
+    lnavTabs.forEach(t => t.classList.remove("drag-over"));
+    lnavBar._suppress = true; setTimeout(() => { lnavBar._suppress = false; }, 300);
+    const b = d.over || tabAt(e.clientX - d.left);
+    const cur = lnavTabs.find(t => t.getAttribute("aria-selected") === "true");
+    if(b === cur) syncLnav(b.dataset.tab); else lnavGo(b.dataset.tab);
+  };
+  lnavBar.addEventListener("pointerup", end); lnavBar.addEventListener("pointercancel", end);
+})();
+$("lnavBrand").addEventListener("click", () => window.scrollTo({top:0, behavior:motionOK() ? "smooth" : "auto"}));
+window.addEventListener("resize", () => { if(lnav.classList.contains("show")){ const cur = lnavTabs.find(b => b.getAttribute("aria-selected") === "true"); if(cur) syncLnav(cur.dataset.tab, true); } });
 tabBtns.forEach(b => b.addEventListener("click", () => { show(b.dataset.tab); store.set("tab", b.dataset.tab); }));
 // 分頁列：按住滑塊左右滑動，放開時切到那一格（像 iPhone 的分段控制）
 (function(){
@@ -1773,6 +2005,21 @@ let currentPet = (function(){ const c = store.get("currentPet"); return pets.som
 let editing = false;
 let careAnim = null;   // 下一次畫面要播的動畫：{type:"switch"} 或 {type:"add", id}
 const reduceMotion = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// 刪除一隻貓：那一列先收合，再移除資料；選單保持打開，看得到剩下的貓
+function deletePet(id, row){
+  const finish = () => {
+    Object.keys(checks.data).forEach(k => { if(k.startsWith(id + ":")) delete checks.data[k]; });
+    pets = pets.filter(p => p.id !== id);
+    if(!pets.some(p => p.id === currentPet)) currentPet = pets[0].id;
+    saveChecks(); savePets(); renameTask = null; careAnim = {type:"switch"}; renderCare();
+    const m = document.querySelector(".pet-menu"), s = document.querySelector(".pet-switch");
+    if(m){ m.classList.add("stay"); m.hidden = false; if(s) s.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => m.classList.remove("stay")); }
+  };
+  if(!row || !motionOK()) return finish();
+  row.style.height = row.offsetHeight + "px"; row.offsetHeight;
+  row.classList.add("removing");
+  setTimeout(finish, 260);
+}
 function closeMenu(){
   const m = document.querySelector(".pet-menu"), s = document.querySelector(".pet-switch");
   if(!m || m.hidden || m.classList.contains("closing")) return;
@@ -1847,6 +2094,7 @@ function timeChip(obj, save, label){
 const ICON_PEN = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M11.2 2.3a1.6 1.6 0 0 1 2.3 2.3L5.6 12.5 2.5 13.5l1-3.1z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
 const ICON_TRASH = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.8 4.2h10.4M6.2 4.2V2.8h3.6v1.4M4.2 4.2l.7 9h6.2l.7-9M6.7 6.6v4.4M9.3 6.6v4.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ICON_PHOTO = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5.5h2.3L5.6 3.5h4.8l1.3 2H14v7.5H2z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="9" r="2.3" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
+const ICON_HELP = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 6.1a2.1 2.1 0 1 1 3 1.9c-.6.3-1 .8-1 1.5v.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="12.1" r=".95" fill="currentColor"/></svg>';
 const ICON_TAG = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 2.5h5l6 6-5 5-6-6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5.4" cy="5.4" r="1" fill="currentColor"/></svg>';
 const ICON_BACK = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ICON_OK = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.4l3.2 3.1L13 4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -1990,13 +2238,31 @@ function renderCare(){
     tm = setTimeout(() => { stop(); lpFired = true; try{ if(navigator.vibrate) navigator.vibrate(12); }catch(err){} closeMenu(); openCtx(sw, petMenu(pet), sw); sw.classList.add("ctx-on"); }, LONG_PRESS_MS);
   });
   sw.addEventListener("contextmenu", e => e.preventDefault());
-  pets.forEach(p => menu.append(el("button", {type:"button", class:"pet-opt" + (p.id === pet.id ? " on" : ""), role:"menuitem",
+  pets.forEach(p => {
+    const opt = el("button", {type:"button", class:"pet-opt" + (p.id === pet.id ? " on" : ""), role:"menuitem",
       onclick: () => {
         if(p.id === pet.id){ closeMenu(); return; }
         currentPet = p.id; renameTask = null; savePets(); careAnim = {type:"switch"}; renderCare();
       }},
-    el("img", {src:petPhoto(p), alt:"", width:32, height:32}),
-    el("span", {class:"pet-id"}, el("b", {text:p.name}), (breedName(p.breed) ? el("small", {text:breedName(p.breed)}) : null)))));
+      el("img", {src:petPhoto(p), alt:"", width:32, height:32}),
+      el("span", {class:"pet-id"}, el("b", {text:p.name}), (breedName(p.breed) ? el("small", {text:breedName(p.breed)}) : null)));
+    // 至少留一隻貓；兩隻以上，每一列右邊有刪除鍵：第一下變成紅色「刪除」，第二下才真的刪
+    if(pets.length < 2){ menu.append(opt); return; }
+    const del = el("button", {type:"button", class:"pet-del", "aria-label":`刪除 ${p.name}`},
+      svgSpan("pd-ico", ICON_TRASH), el("span", {class:"pd-txt", text:"刪除"}));
+    const row = el("div", {class:"pet-row"}, opt, del);
+    del.addEventListener("click", e => {
+      e.stopPropagation();
+      if(!del.classList.contains("armed")){
+        menu.querySelectorAll(".pet-del.armed").forEach(x => x.classList.remove("armed"));
+        del.classList.add("armed"); del.setAttribute("aria-label", `再按一次刪除 ${p.name}`); return;
+      }
+      deletePet(p.id, row);
+    });
+    menu.append(row);
+  });
+  // 在選單其他地方點一下，就取消待確認的刪除
+  menu.addEventListener("click", e => { if(!e.target.closest(".pet-del")) menu.querySelectorAll(".pet-del.armed").forEach(x => x.classList.remove("armed")); }, true);
   if(pets.length < 12) menu.append(el("button", {type:"button", class:"pet-opt add", role:"menuitem",
       onclick: () => {
         const p = {id:newId("p"), name:`第 ${pets.length + 1} 隻貓`, breed:"", photo:null, tasks:DEFAULT_TASKS()};
@@ -2008,7 +2274,10 @@ function renderCare(){
       el("img", {class:"pet-av", src:petPhoto(pet), alt:"", width:40, height:40}),
       inlineInput(pet.name, 12, "貓咪名字", v => { renamingPet = false; if(v){ pet.name = v; savePets(); } careAnim = {type:"breed"}; renderCare(); }));
   } else head = el("div", {class:"pet-switch-wrap"}, sw, menu);
-  const bar = el("div", {class:"pet-bar"}, head, el("span", {class:"progress", text:`${done}/${pet.tasks.length}`}));
+  // 「?」：重播操作教學（不用文字提示，想看再按）
+  const help = el("button", {type:"button", class:"help-btn", "aria-label":"重播操作教學", title:"操作教學"}, svgSpan("help-ico", ICON_HELP));
+  help.addEventListener("click", e => { e.stopPropagation(); replayTour(); });
+  const bar = el("div", {class:"pet-bar"}, head, el("span", {class:"progress", text:`${done}/${pet.tasks.length}`}), help);
   card.append(bar);
 
   // ---- 待辦清單 ----
@@ -2469,7 +2738,29 @@ function glassSelect(select){
 }
 /* ===== 2. 食量計算 ===== */
 const STAGE = {kitten:[2.5,"幼貓"],neutered:[1.2,"已結紮成貓"],intact:[1.4,"未結紮成貓"],lazy:[1.0,"不太愛動"],diet:[0.8,"需要減重"],senior:[1.1,"老貓"]};
+// 減重：用「目標體重」算熱量（用目前體重算，胖貓會越算越多）。目標預設為目前體重的 90%，可調整，範圍 70%–100%
+const r1 = v => Math.round(v * 10) / 10;
+let targetEdited = false;
+function syncTarget(){
+  const w = Number($("fWeight").value), t = $("fTarget"), diet = $("fStage").value === "diet", wrap = $("fTargetWrap");
+  wrap.classList.toggle("open", diet); wrap.setAttribute("aria-hidden", String(!diet));
+  wrap.querySelectorAll("input,button").forEach(x => x.tabIndex = diet ? 0 : -1);
+  if(!Number.isFinite(w) || w < 0.5 || w > 15) return;
+  const lo = Math.max(0.5, r1(w * 0.7)), hi = r1(w);
+  t.min = String(lo); t.max = String(hi);
+  let v = Number(t.value);
+  if(!targetEdited || !Number.isFinite(v)) v = r1(w * 0.9);
+  v = Math.min(hi, Math.max(lo, v));
+  t.value = v.toFixed(1);
+}
+$("fTarget").addEventListener("input", () => { targetEdited = true; });
+$("fTarget").addEventListener("change", () => { syncTarget(); calcFood(); });
+$("fTargetInfo").addEventListener("click", () => {
+  const tip = $("fTargetTip"), open = !tip.classList.contains("open");
+  tip.classList.toggle("open", open); $("fTargetInfo").setAttribute("aria-expanded", String(open)); $("fTargetInfo").classList.toggle("on", open);
+});
 function calcFood(){
+  syncTarget();
   const w = Number($("fWeight").value), kcal100 = Number($("fKcal").value);
   const st = STAGE[$("fStage").value], meals = [1,2,3,4].includes(Number($("fMeals").value)) ? Number($("fMeals").value) : 3;
   const errs = [];
@@ -2484,20 +2775,23 @@ function calcFood(){
     return;
   }
   err.hidden = true;
-  const k = st[0], rer = 70 * Math.pow(w, 0.75), der = rer * k, gram = der / kcal100 * 100;
+  const diet = $("fStage").value === "diet", tw = diet ? Number($("fTarget").value) : w, bw = diet && Number.isFinite(tw) && tw > 0 ? tw : w;
+  const k = st[0], rer = 70 * Math.pow(bw, 0.75), der = rer * k, gram = der / kcal100 * 100;
   const prevGram = calcFood.prev, prevKcal = calcFood.prevKcal; calcFood.prev = gram; calcFood.prevKcal = der;
   const gNum = $("outGram").querySelector(".gnum") || (() => { const g = document.createElement("span"); g.className = "gnum"; $("outGram").replaceChildren(g, Object.assign(document.createElement("small"), {textContent:"公克／天"})); return g; })();
   tweenNum(gNum, prevGram, gram, v => v.toFixed(0), 420);
   tweenNum($("outKcal"), prevKcal, der, v => `${v.toFixed(0)} kcal`, 420);
   $("outMeal").textContent = `${(gram/meals).toFixed(1)} 公克 × ${meals} 餐`;
   $("outWater").textContent = `${Math.round(w*40)}–${Math.round(w*60)} ml`;
-  $("outFormula").textContent = `RER = 70 × ${w}^0.75 = ${rer.toFixed(0)} kcal\n每日熱量 = RER × ${k}（${st[1]}）= ${der.toFixed(0)} kcal\n飼料克數 = ${der.toFixed(0)} ÷ ${kcal100} × 100 = ${gram.toFixed(0)} 公克`;
+  $("outFormula").textContent = `${diet ? `以目標體重 ${bw} 公斤計算（目前 ${w} 公斤）\n` : ""}RER = 70 × ${bw}^0.75 = ${rer.toFixed(0)} kcal\n每日熱量 = RER × ${k}（${st[1]}）= ${der.toFixed(0)} kcal\n飼料克數 = ${der.toFixed(0)} ÷ ${kcal100} × 100 = ${gram.toFixed(0)} 公克`;
 }
 $("foodForm").addEventListener("input", calcFood);
 $("foodForm").addEventListener("submit", e => e.preventDefault());
 calcFood();
 initSeg(document.querySelector("#foodForm .seg"), $("fMeals"), calcFood);
 glassSelect($("fStage"));
+$("remHelp").replaceChildren(svgSpan("help-ico", ICON_HELP));
+$("remHelp").addEventListener("click", e => { e.stopPropagation(); replayTour("rem"); });
 
 /* ===== 3. AI 品種配對：規則式專家系統 =====
    每題答案 → 一條規則 {權重 w, 符合度函數 fit(t) 回傳 0–1, 好理由, 壞理由} */
@@ -2674,6 +2968,7 @@ $("clearBtn").addEventListener("click", () => {
 
 $("logo").setAttribute("viewBox","4 2 56 58");
 $("logo").innerHTML = POSES.care.split("</g>")[0] + "</g>";
+$("lnavLogo").innerHTML = POSES.care.split("</g>")[0].replace(/<ellipse[^>]*opacity[^>]*\/>/, "") + "</g>";
 
 /* ===== 照片牆 ===== */
 const GALLERY = [
@@ -2687,20 +2982,28 @@ GALLERY.forEach(([k,cap]) => {
   fig.append(img, fc); $("gallery").append(fig);
 });
 /* ===== 第一次使用的拖曳示範（不用文字，直接演一次） ===== */
-let hintAnims = [], hintCleanup = null;
-// 第一次使用的教學：畫面變暗聚焦在卡片上，示範「長按拖動」和「長按編輯」
-function playDragHint(){
-  if(!motionOK()) return Promise.resolve();
-  const card = $("petCard"), ul = card.querySelector(".todo");
-  const rows = ul ? [...ul.querySelectorAll("li:not(.add-row)")] : [];
-  if(rows.length < 2) return Promise.resolve();
+let hintAnims = [], hintCleanup = null, replayTour = () => {};
+// 教學：畫面變暗聚焦在卡片上，示範「長按拖動」「長按編輯」「長按頭像」
+// force：使用者自己按了重播，就算系統關閉動畫也照樣播
+// which："care" 每日照顧（待辦＋頭像）／"rem" 長週期提醒
+const TOURS = {
+  care:{card:"petCard", rows:".todo li:not(.add-row)", label:".t-main span", avatar:true},
+  rem:{card:"remCard", rows:"#remList li.rrow", label:".rname", avatar:false}
+};
+function playDragHint(force, which = "care"){
+  if(!motionOK() && !force) return Promise.resolve();
+  if(hintCleanup && document.body.classList.contains("touring")) return Promise.resolve();
+  const cfg = TOURS[which] || TOURS.care;
+  const card = $(cfg.card);
+  const rows = [...card.querySelectorAll(cfg.rows)];
   const band = card.closest(".band");
-  const a = rows[0], b = rows[1];
-  const h = b.getBoundingClientRect().top - a.getBoundingClientRect().top;
-  const label = a.querySelector(".t-main span") || a;
-  const lr = label.getBoundingClientRect(), ar = a.getBoundingClientRect();
+  // 待辦不夠兩列就跳過拖曳；一列都沒有就只示範長按頭像
+  const a = rows[0] || null, b = rows[1] || null, canDrag = !!(a && b);
+  const h = canDrag ? b.getBoundingClientRect().top - a.getBoundingClientRect().top : 0;
+  const label = a ? (a.querySelector(cfg.label) || a) : null;
+  const lr = label ? label.getBoundingClientRect() : null, ar = a ? a.getBoundingClientRect() : null;
   const dot = el("span", {class:"hint-touch", "aria-hidden":"true"});
-  dot.style.left = (lr.right - ar.left + 28) + "px";
+  if(a){ dot.style.left = (lr.right - ar.left + 28) + "px"; dot.style.top = (lr.top - ar.top + lr.height / 2) + "px"; }
   // 聚光燈
   const veil = el("div", {class:"hint-veil", "aria-hidden":"true"});
   document.body.append(veil);
@@ -2712,7 +3015,7 @@ function playDragHint(){
     if(done) return; done = true;
     timers.forEach(clearTimeout);
     hintAnims.forEach(x => { try{ x.cancel(); }catch(e){} });
-    dot.remove(); a.classList.remove("hinting", "ctx-on");
+    dot.remove(); if(a) a.classList.remove("hinting", "ctx-on");
     const sw0 = card.querySelector(".pet-switch"); if(sw0){ sw0.classList.remove("ctx-on", "hint-host"); }
     if(menu){ menu.classList.add("closing"); const m = menu; menu = null; setTimeout(() => m.remove(), 180); }
     veil.classList.remove("on"); card.classList.remove("spot-on");
@@ -2726,7 +3029,7 @@ function playDragHint(){
   const ease = "cubic-bezier(.28,.11,.32,1)", lift = "0 12px 32px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.06)", none = "0 0 0 rgba(0,0,0,0)";
   const D = 4500, T0 = 700;   // 先讓畫面暗下來，再開始示範
   // 第一段：長按拖動
-  at(T0, () => {
+  if(canDrag) at(T0, () => {
     a.classList.add("hinting"); a.append(dot);
     hintAnims = [
       a.animate([
@@ -2773,13 +3076,15 @@ function playDragHint(){
   const liftDot = () => { hintAnims = [dot.animate([{opacity:1, transform:"translate(-50%,-50%) scale(.82)"}, {opacity:0, transform:"translate(-50%,-50%) scale(1.25)"}], {duration:300, fill:"forwards"})]; };
   const ICON_NOTIME = '<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M5.6 5.6l4.8 4.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
   // 第二段：長按待辦，跳出編輯選單
-  const T1 = T0 + D + 500;
-  at(T1, () => pressAt(a, lr.right - ar.left + 28));
-  at(T1 + 650, () => { a.classList.add("ctx-on"); menu = fakeMenu(a, [[ICON_PEN, "重新命名"], [ICON_NOTIME, "清除時間"], "sep", [ICON_TRASH, "刪除", true]]); });
-  at(T1 + 650 + 1700, () => { liftDot(); closeFake(); a.classList.remove("ctx-on"); });
+  const T1 = canDrag ? T0 + D + 500 : T0;
+  if(a){
+    at(T1, () => pressAt(a, lr.right - ar.left + 28));
+    at(T1 + 650, () => { a.classList.add("ctx-on"); menu = fakeMenu(a, which === "rem" ? [[ICON_PEN, "重新命名"], "sep", [ICON_TRASH, "刪除", true]] : [[ICON_PEN, "重新命名"], [ICON_NOTIME, "清除時間"], "sep", [ICON_TRASH, "刪除", true]]); });
+    at(T1 + 650 + 1700, () => { liftDot(); closeFake(); a.classList.remove("ctx-on"); });
+  }
   // 第三段：長按頭像，跳出換照片、改名、品種
-  const sw = card.querySelector(".pet-switch"), av = sw && sw.querySelector(".pet-av");
-  const T2 = T1 + 650 + 1700 + 600;
+  const sw = cfg.avatar ? card.querySelector(".pet-switch") : null, av = sw && sw.querySelector(".pet-av");
+  const T2 = a ? T1 + 650 + 1700 + 600 : T1;
   if(sw && av){
     at(T2, () => { const sr = sw.getBoundingClientRect(), vr = av.getBoundingClientRect(); sw.classList.add("hint-host"); pressAt(sw, vr.left - sr.left + vr.width / 2); dot.style.top = (vr.top - sr.top + vr.height / 2) + "px"; });
     at(T2 + 650, () => { sw.classList.add("ctx-on"); menu = fakeMenu(sw, [[ICON_PHOTO, "更換照片"], [ICON_PEN, "重新命名"], [ICON_TAG, "品種", false, true]]); });
@@ -2787,30 +3092,35 @@ function playDragHint(){
   } else at(T2, cleanup);
   return finished;
 }
-// 第一次看到「每日照顧」時示範一次，之後不再出現；使用者一碰就立刻停止
+// 教學什麼時候播：
+// 1. 第一次來的人：只要停在「每日照顧」（一進站就是，或之後切過來），等一秒就自動捲到卡片、開始示範；每人只自動播一次
+// 2. 之後想再看：按卡片右上角的「?」重播
 (function(){
-  // 每次進入網站都示範一次（點任何地方就能跳過）
-  if(!motionOK()) return;
-  const card = $("petCard");
-  let started = false;
-  const stopHint = () => { if(hintCleanup) hintCleanup(); };
-  card.addEventListener("pointerdown", stopHint, true);
-  const start = () => {
-    if(started) return; started = true;
-    playDragHint().then(() => { try{ localStorage.removeItem(PREFIX + "hintDrag"); localStorage.removeItem(PREFIX + "hintTour"); }catch(e){} card.removeEventListener("pointerdown", stopHint, true); });
+  const card = $("petCard"), panel = card.closest("section.panel");
+  let running = false;
+  const run = (force, which = "care") => {
+    if(running) return Promise.resolve(); running = true;
+    $(TOURS[which].card).scrollIntoView({behavior:motionOK() ? "smooth" : "auto", block:"center"});
+    return new Promise(r => setTimeout(r, motionOK() ? 550 : 0)).then(() => playDragHint(force, which)).then(() => { running = false; });
   };
+  replayTour = (which = "care") => run(true, which);
+  if(store.get("tourSeen") || !motionOK()) return;
+  let timer = null, auto = false;
+  const tryAuto = () => {
+    clearTimeout(timer);
+    if(auto || panel.hidden) return;
+    timer = setTimeout(() => {
+      if(auto || panel.hidden) return;
+      auto = true; mo.disconnect();
+      store.set("tourSeen", 1);
+      try{ localStorage.removeItem(PREFIX + "hintDrag"); localStorage.removeItem(PREFIX + "hintTour"); }catch(e){}
+      run(false);
+    }, 1000);
+  };
+  const mo = new MutationObserver(tryAuto);
+  mo.observe(panel, {attributes:true, attributeFilter:["hidden"]});
   const ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-  ready.then(() => {
-    let t = null;
-    const io = new IntersectionObserver(es => {
-      // 卡片露出六成，或已經占了畫面四成以上（視窗很矮時卡片不可能露出六成）
-      const vis = es.some(e => e.isIntersecting && !card.closest("section.panel").hidden &&
-        (e.intersectionRatio >= .6 || e.intersectionRect.height >= (e.rootBounds ? e.rootBounds.height : innerHeight) * .4));
-      clearTimeout(t);
-      if(vis && !started) t = setTimeout(() => { io.disconnect(); card.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(start, 500); }, 1000);
-    }, {threshold:[0,.2,.4,.6,.8,1]});
-    io.observe(card);
-  });
+  ready.then(tryAuto);
 })();
 })();
 </script>
