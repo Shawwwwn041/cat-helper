@@ -261,7 +261,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .stepper{display:flex;align-items:center;gap:10px}
 .stepper input{text-align:center;font-size:1.0625rem;font-variant-numeric:tabular-nums;flex:1;min-width:0}
 .step{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:1.25rem;line-height:1;cursor:pointer;display:grid;place-items:center;transition:background .2s cubic-bezier(.28,.11,.32,1),border-color .2s}
-.step:hover{border-color:var(--blue);color:var(--blue)}
+@media (hover:hover){.step:hover{border-color:var(--blue);color:var(--blue)}}
 .step:active{background:var(--band)}
 .step:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .field input,.field select{border-radius:12px;padding:10px 14px;border-color:var(--line)}
@@ -1019,6 +1019,26 @@ html{scroll-padding-top:calc(var(--lnav-h) + 12px)}
 #breedGrid .breed > p{margin:0}
 #breedGrid .breed .meters{margin-top:auto}
 
+/* 加減按鈕：符號改用線條圖示，永遠在圓圈正中央；手機上連點不會放大畫面，按住會連續加減 */
+html{touch-action:manipulation}
+.step{touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;padding:0}
+.step svg{display:block}
+.step:focus:not(:focus-visible){outline:none}
+
+/* 第一次來：「?」外圈輕輕呼吸發光，提醒這裡有操作教學 */
+.help-btn{position:relative}
+.help-btn.beckon{color:var(--blue);background:rgba(0,113,227,.1)}
+.help-btn.beckon::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid rgba(0,113,227,.45);pointer-events:none;animation:beckon 2.4s cubic-bezier(.28,.11,.32,1) infinite}
+@keyframes beckon{0%{opacity:0;transform:scale(.8)}35%{opacity:1}100%{opacity:0;transform:scale(1.45)}}
+/* 「操作教學」小提示：毛玻璃小泡泡，從「?」下方浮出 */
+.help-btn::after{content:"操作教學";position:absolute;top:calc(100% + 10px);right:-6px;padding:7px 12px;border-radius:10px;white-space:nowrap;
+  font-size:.8125rem;line-height:1;font-weight:500;color:var(--ink);letter-spacing:.02em;pointer-events:none;
+  background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
+  box-shadow:0 8px 24px rgba(0,0,0,.12),0 1px 3px rgba(0,0,0,.08),inset 0 0 0 .5px rgba(0,0,0,.06);
+  opacity:0;transform:translate3d(0,-4px,0) scale(.96);transform-origin:top right;transition:opacity .35s cubic-bezier(.28,.11,.32,1),transform .45s cubic-bezier(.28,.11,.32,1);z-index:30}
+.help-btn.tip-on::after{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.help-btn.beckon::before{animation:none;opacity:.8;transform:none}.help-btn::after{transition:none}}
+
 /* 教學聚光燈 */
 .hint-veil{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);opacity:0;transition:opacity .45s var(--ease);cursor:pointer}
 .hint-veil.on{opacity:1}
@@ -1074,7 +1094,7 @@ html{scroll-padding-top:calc(var(--lnav-h) + 12px)}
     <div class="band">
     <div class="card pet-card" id="petCard"></div>
     <div class="card rem-card" id="remCard">
-      <div class="rem-head"><h3 class="sub">長週期提醒</h3><button type="button" class="help-btn" id="remHelp" aria-label="重播操作教學" title="操作教學"></button></div>
+      <div class="rem-head"><h3 class="sub">長週期提醒</h3><button type="button" class="help-btn" id="remHelp" aria-label="操作教學" title="操作教學"></button></div>
       <div class="rcols" aria-hidden="true"><span>項目</span><span>週期</span><span>上次完成</span><span>下次</span><span>狀態</span><span></span></div>
       <ul class="rlist" id="remList"></ul>
     </div>
@@ -1092,7 +1112,7 @@ html{scroll-padding-top:calc(var(--lnav-h) + 12px)}
       <form class="card form" id="foodForm" novalidate>
         <div class="field">
           <label for="fWeight">體重（公斤）</label>
-          <div class="stepper"><button type="button" class="step" data-for="fWeight" data-dir="-1" aria-label="減少">−</button><input id="fWeight" type="number" inputmode="decimal" min="0.5" max="15" step="0.1" value="5.2"><button type="button" class="step" data-for="fWeight" data-dir="1" aria-label="增加">+</button></div>
+          <div class="stepper"><button type="button" class="step" data-for="fWeight" data-dir="-1" aria-label="減少"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><input id="fWeight" type="number" inputmode="decimal" min="0.5" max="15" step="0.1" value="5.2"><button type="button" class="step" data-for="fWeight" data-dir="1" aria-label="增加"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
         </div>
         <div class="field">
           <label for="fStage">目前狀態</label>
@@ -1108,13 +1128,13 @@ html{scroll-padding-top:calc(var(--lnav-h) + 12px)}
         <div class="reveal" id="fTargetWrap" aria-hidden="true"><div class="reveal-in">
         <div class="field">
           <div class="flabel-row"><label for="fTarget">目標體重（公斤）</label><button type="button" class="info-btn" id="fTargetInfo" aria-label="減重注意事項" aria-expanded="false" tabindex="-1"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></svg></button></div>
-          <div class="stepper"><button type="button" class="step" data-for="fTarget" data-dir="-1" aria-label="減少" tabindex="-1">−</button><input id="fTarget" type="number" inputmode="decimal" min="0.5" max="15" step="0.1" value="4.7" tabindex="-1"><button type="button" class="step" data-for="fTarget" data-dir="1" aria-label="增加" tabindex="-1">+</button></div>
+          <div class="stepper"><button type="button" class="step" data-for="fTarget" data-dir="-1" aria-label="減少" tabindex="-1"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><input id="fTarget" type="number" inputmode="decimal" min="0.5" max="15" step="0.1" value="4.7" tabindex="-1"><button type="button" class="step" data-for="fTarget" data-dir="1" aria-label="增加" tabindex="-1"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
           <div class="reveal" id="fTargetTip"><div class="reveal-in"><p class="tip">每週減掉的體重，最好不超過目前體重的 1–2%。減太快可能引發脂肪肝；理想體重請讓獸醫評估。</p></div></div>
         </div>
         </div></div>
         <div class="field">
           <label for="fKcal">飼料熱量（每 100 公克的 kcal）</label>
-          <div class="stepper"><button type="button" class="step" data-for="fKcal" data-dir="-1" aria-label="減少">−</button><input id="fKcal" type="number" inputmode="numeric" min="50" max="600" step="1" value="380"><button type="button" class="step" data-for="fKcal" data-dir="1" aria-label="增加">+</button></div>
+          <div class="stepper"><button type="button" class="step" data-for="fKcal" data-dir="-1" aria-label="減少"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><input id="fKcal" type="number" inputmode="numeric" min="50" max="600" step="1" value="380"><button type="button" class="step" data-for="fKcal" data-dir="1" aria-label="增加"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
         </div>
         <div class="field">
           <span class="flabel" id="fMealsLabel">一天分幾餐</span>
@@ -1255,6 +1275,12 @@ const store = {
   set(k,v){ try{ localStorage.setItem(PREFIX + k, JSON.stringify(v)); }catch(e){} },
   clear(){ try{ Object.keys(localStorage).filter(k => k.startsWith(PREFIX)).forEach(k => localStorage.removeItem(k)); }catch(e){} }
 };
+// 「?」的提醒光圈：還沒按過任何一顆「?」的人才會看到
+let beckon = !store.get("tourHintSeen");
+function stopBeckon(){
+  if(!beckon) return; beckon = false; store.set("tourHintSeen", 1);
+  document.querySelectorAll(".help-btn.beckon").forEach(b => { b.classList.remove("beckon", "tip-on"); });
+}
 
 /* ===== 日期 ===== */
 const pad = n => String(n).padStart(2,"0");
@@ -1939,7 +1965,8 @@ document.querySelectorAll("[data-go]").forEach(a => a.addEventListener("click", 
   e.preventDefault(); show(a.dataset.go); store.set("tab", a.dataset.go);
   document.getElementById("tabsNav").scrollIntoView({behavior:"smooth", block:"start"});
 }));
-document.querySelectorAll(".step").forEach(b => b.addEventListener("click", () => {
+// 加減：手指一按下就立刻反應（不用等 click）；按住 0.4 秒後開始連續加減，越按越快
+function stepOnce(b){
   const inp = document.getElementById(b.dataset.for); if(!inp) return;
   const st = Number(inp.step) || 1, min = Number(inp.min), max = Number(inp.max);
   let v = Number(inp.value); if(!Number.isFinite(v)) v = min;
@@ -1947,7 +1974,23 @@ document.querySelectorAll(".step").forEach(b => b.addEventListener("click", () =
   inp.value = String(Math.round(v / st) * st).replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
   if(st < 1) inp.value = (Math.round(v*10)/10).toFixed(1);
   inp.dispatchEvent(new Event("input", {bubbles:true}));
-}));
+  inp.dispatchEvent(new Event("change", {bubbles:true}));
+}
+document.querySelectorAll(".step").forEach(b => {
+  let t = null, fromPointer = false;
+  const stop = () => { clearTimeout(t); t = null; };
+  b.addEventListener("pointerdown", e => {
+    if(e.button > 0) return;
+    e.preventDefault();             // 不搶焦點、不觸發選字
+    fromPointer = true; stepOnce(b);
+    let delay = 380;
+    const rep = () => { stepOnce(b); delay = Math.max(50, delay * 0.82); t = setTimeout(rep, delay); };
+    t = setTimeout(rep, delay);
+  });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev => b.addEventListener(ev, stop));
+  // 鍵盤（Enter／空白鍵）仍然用 click
+  b.addEventListener("click", e => { if(fromPointer){ fromPointer = false; return; } stepOnce(b); });
+});
 
 /* ===== 開場的玻璃滑塊：跟著滑鼠移動，離開後回到第一個 ===== */
 (function(){
@@ -2275,7 +2318,7 @@ function renderCare(){
       inlineInput(pet.name, 12, "貓咪名字", v => { renamingPet = false; if(v){ pet.name = v; savePets(); } careAnim = {type:"breed"}; renderCare(); }));
   } else head = el("div", {class:"pet-switch-wrap"}, sw, menu);
   // 「?」：重播操作教學（不用文字提示，想看再按）
-  const help = el("button", {type:"button", class:"help-btn", "aria-label":"重播操作教學", title:"操作教學"}, svgSpan("help-ico", ICON_HELP));
+  const help = el("button", {type:"button", class:"help-btn" + (beckon ? " beckon" : ""), "aria-label":"操作教學", title:"操作教學"}, svgSpan("help-ico", ICON_HELP));
   help.addEventListener("click", e => { e.stopPropagation(); replayTour(); });
   const bar = el("div", {class:"pet-bar"}, head, el("span", {class:"progress", text:`${done}/${pet.tasks.length}`}), help);
   card.append(bar);
@@ -3092,35 +3135,41 @@ function playDragHint(force, which = "care"){
   } else at(T2, cleanup);
   return finished;
 }
-// 教學什麼時候播：
-// 1. 第一次來的人：只要停在「每日照顧」（一進站就是，或之後切過來），等一秒就自動捲到卡片、開始示範；每人只自動播一次
-// 2. 之後想再看：按卡片右上角的「?」重播
+// 教學什麼時候播：不自動播放。第一次來的人，「?」會輕輕呼吸發光，旁邊浮出「操作教學」小提示；
+// 按過任何一顆「?」之後就不再提醒。想看教學隨時按「?」
 (function(){
   const card = $("petCard"), panel = card.closest("section.panel");
   let running = false;
   const run = (force, which = "care") => {
     if(running) return Promise.resolve(); running = true;
-    $(TOURS[which].card).scrollIntoView({behavior:motionOK() ? "smooth" : "auto", block:"center"});
-    return new Promise(r => setTimeout(r, motionOK() ? 550 : 0)).then(() => playDragHint(force, which)).then(() => { running = false; });
+    // 卡片放得下就置中；卡片比畫面高（例如手機上的長週期提醒），就把卡片開頭停在頂部細條下方，示範的前兩列才看得到
+    const c = $(TOURS[which].card), cr = c.getBoundingClientRect();
+    const barH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--lnav-h")) || 52;
+    const room = innerHeight - barH - 24;
+    const top = cr.height <= room ? cr.top + scrollY - barH - (room - cr.height) / 2 - 12 : cr.top + scrollY - barH - 12;
+    window.scrollTo({top:Math.max(0, top), behavior:motionOK() ? "smooth" : "auto"});
+    return new Promise(r => setTimeout(r, motionOK() ? 650 : 0)).then(() => playDragHint(force, which)).then(() => { running = false; });
   };
-  replayTour = (which = "care") => run(true, which);
-  if(store.get("tourSeen") || !motionOK()) return;
-  let timer = null, auto = false;
-  const tryAuto = () => {
-    clearTimeout(timer);
-    if(auto || panel.hidden) return;
-    timer = setTimeout(() => {
-      if(auto || panel.hidden) return;
-      auto = true; mo.disconnect();
-      store.set("tourSeen", 1);
-      try{ localStorage.removeItem(PREFIX + "hintDrag"); localStorage.removeItem(PREFIX + "hintTour"); }catch(e){}
-      run(false);
-    }, 1000);
+  replayTour = (which = "care") => { stopBeckon(); return run(true, which); };
+  try{ ["hintDrag","hintTour","tourSeen"].forEach(k => localStorage.removeItem(PREFIX + k)); }catch(e){}
+  if(beckon) $("remHelp").classList.add("beckon");
+  // 小提示「操作教學」：每日照顧那顆「?」第一次出現在畫面上時浮出，6 秒後自己收起（呼吸光圈會留著，直到按過「?」）
+  if(!beckon) return;
+  let shown = false;
+  const tip = () => {
+    if(shown || !beckon || panel.hidden) return;
+    const btn = card.querySelector(".help-btn"); if(!btn) return;
+    const r = btn.getBoundingClientRect(); if(r.top < 0 || r.bottom > innerHeight) return;
+    shown = true; io.disconnect(); mo.disconnect();
+    btn.classList.add("tip-on");
+    setTimeout(() => { const b2 = card.querySelector(".help-btn"); if(b2) b2.classList.remove("tip-on"); }, 6000);
   };
-  const mo = new MutationObserver(tryAuto);
+  const io = new IntersectionObserver(() => setTimeout(tip, 600), {threshold:1});
+  io.observe(card);
+  const mo = new MutationObserver(() => setTimeout(tip, 600));
   mo.observe(panel, {attributes:true, attributeFilter:["hidden"]});
   const ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-  ready.then(tryAuto);
+  ready.then(() => setTimeout(tip, 900));
 })();
 })();
 </script>
