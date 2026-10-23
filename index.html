@@ -8,6 +8,15 @@
 <meta property="og:description" content="記得每一餐。算準每一口。遇見對的貓。">
 <meta property="og:type" content="website">
 <meta name="robots" content="index, follow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="貓咪小幫手">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
 <title>貓咪照顧小幫手</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3174,5 +3183,10 @@ function playDragHint(force, which = "care"){
 })();
 </script>
 
+<script>
+if("serviceWorker" in navigator && location.protocol === "https:"){
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
+</script>
 </body>
 </html>
