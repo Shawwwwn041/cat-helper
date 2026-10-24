@@ -399,7 +399,8 @@ nav.tabs button:focus-visible{background:transparent;outline:2px solid var(--blu
 .pet-card{max-width:640px;width:100%;margin:0 auto;padding:20px 24px 12px}
 .pet-bar{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
 .pet-switch-wrap{position:relative;flex:1;min-width:0}
-.pet-switch{display:flex;align-items:center;gap:12px;max-width:100%;padding:6px 12px 6px 6px;border:0;border-radius:980px;background:transparent;cursor:pointer;font:inherit;color:var(--ink);text-align:left;transition:background .2s}
+.pet-head{display:flex;align-items:center;gap:2px;flex:1;min-width:0}
+.pet-switch{display:flex;align-items:center;gap:10px;max-width:100%;min-height:52px;padding:6px 12px;border:0;border-radius:980px;background:transparent;cursor:pointer;font:inherit;color:var(--ink);text-align:left;transition:background .2s}
 .pet-switch:hover,.pet-switch[aria-expanded="true"]{background:var(--soft)}
 .pet-switch:focus-visible,.pet-opt:focus-visible,.link-btn:focus-visible,.add-btn:focus-visible,.t-del:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .pet-av{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none}
@@ -458,6 +459,7 @@ select.field-in{-webkit-appearance:none;appearance:none;padding-right:34px;curso
 :root{--ease:cubic-bezier(.28,.11,.32,1);--spring:cubic-bezier(.34,1.36,.64,1)}
 @keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
 @keyframes menuOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-4px) scale(.97)}}
+@keyframes photoIn{from{opacity:.2;transform:scale(.8)}to{opacity:1;transform:none}}
 @keyframes swapIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes rowAdd{0%{min-height:0;max-height:0;opacity:0;transform:translateY(-6px);background:rgba(0,113,227,0)}
@@ -469,7 +471,8 @@ select.field-in{-webkit-appearance:none;appearance:none;padding-right:34px;curso
   .pet-menu{transform-origin:top left}
   .pet-menu:not([hidden]){animation:menuIn .24s var(--ease)}
   .pet-menu.closing{animation:menuOut .16s var(--ease) forwards}
-  .pet-switch.swap-in .pet-av,.pet-switch.swap-in .pet-id{animation:swapIn .38s var(--ease)}
+  .pet-head.swap-in .pet-av,.pet-head.swap-in .pet-id{animation:swapIn .38s var(--ease)}
+  .pet-avbtn.photo-in .pet-av{animation:photoIn .5s var(--spring)}
   .todo li.row-in,.pet-profile.row-in{animation:rowIn .42s var(--ease) both;animation-delay:calc(var(--i,0) * 35ms)}
   .todo li.row-add{animation:rowAdd .9s var(--ease);overflow:hidden}
   .todo li.row-del{animation:rowDel .26s var(--ease) forwards;overflow:hidden}
@@ -790,10 +793,11 @@ body.is-dragging,body.is-dragging *{cursor:grabbing !important;user-select:none;
 .ctx-on{background:var(--soft) !important;border-radius:12px;transition:background .2s var(--ease)}
 .todo li.ctx-on,.rrow.ctx-on{padding-left:10px;padding-right:10px;margin:0 -10px}
 .pet-switch.pressing{scale:.97;transition:scale .38s var(--ease)}
-.pet-switch.renaming{display:flex;align-items:center;gap:12px;padding:6px 0;flex:1;min-width:0}
+.pet-switch.renaming{display:flex;align-items:center;gap:12px;padding:6px 0 6px 8px;flex:1;min-width:0}
 .inline-in{flex:1;min-width:0;font:inherit;font-size:1rem;color:var(--ink);border:1px solid var(--blue);border-radius:10px;padding:6px 10px;background:#fff;
   box-shadow:0 0 0 3px rgba(0,113,227,.15);outline:none;-webkit-user-select:text;user-select:text}
 .pet-switch.renaming .inline-in{font-weight:600;font-size:1.0625rem}
+.inline-in:focus-visible{outline:none}   /* 自己就有藍色光暈，不再疊一圈外框 */
 .rrow .rname .inline-in{width:100%}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));translate:-50% 0;z-index:70;padding:10px 18px;border-radius:980px;background:rgba(29,29,31,.92);color:#fff;font-size:.9375rem;
   box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .3s var(--ease),transform .3s var(--ease)}
@@ -1047,6 +1051,21 @@ html{touch-action:manipulation}
   opacity:0;transform:translate3d(0,-4px,0) scale(.96);transform-origin:top right;transition:opacity .35s cubic-bezier(.28,.11,.32,1),transform .45s cubic-bezier(.28,.11,.32,1);z-index:30}
 .help-btn.tip-on::after{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.help-btn.beckon::before{animation:none;opacity:.8;transform:none}.help-btn::after{transition:none}}
+
+/* 頭像：長按換照片。按住時頭像微縮，達到長按時間後浮起、蓋上半透明相機，放開就開相簿 */
+.pet-avbtn{position:relative;flex:none;display:block;width:48px;height:48px;padding:4px;margin-left:-4px;border:0;border-radius:50%;background:transparent;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;transition:transform .4s var(--spring)}
+.pet-avbtn .pet-av{display:block;pointer-events:none;-webkit-user-drag:none;transition:filter .2s var(--ease)}
+.pet-avbtn.still{cursor:default}
+.av-badge{position:absolute;right:0;bottom:0;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--ink);
+  box-shadow:0 1px 4px rgba(0,0,0,.2),0 0 0 .5px rgba(0,0,0,.08);transition:transform .4s var(--spring),box-shadow .25s var(--ease)}
+.av-badge svg{display:block}
+@media (hover:hover){.pet-avbtn:not(.still):hover .pet-av{filter:brightness(.9)}.pet-avbtn:not(.still):hover .av-badge{transform:scale(1.12)}}
+.pet-avbtn:not(.still):active,.pet-avbtn.tapped{transform:scale(.9);transition-duration:.15s}
+.pet-avbtn.tapped .av-badge{box-shadow:0 0 0 4px rgba(0,113,227,.25),0 1px 4px rgba(0,0,0,.2)}
+.pet-avbtn:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.pet-avbtn.hint-host .hint-touch{top:50%}
+@media (prefers-reduced-motion:reduce){.pet-avbtn,.av-badge{transition:none}}
 
 /* 教學聚光燈 */
 .hint-veil{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);opacity:0;transition:opacity .45s var(--ease);cursor:pointer}
@@ -2031,7 +2050,7 @@ const DEFAULT_TASKS = () => [
 ];
 // 預設的兩隻貓（第一次打開時的示範）
 const DEFAULT_PHOTO = {p0: PHOTOS.avatar0, p1: PHOTOS.avatar1};
-const PLACEHOLDER = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#ececf0"/><g transform="translate(15 13) scale(.62)" fill="#b8b8bf"><path d="M24 58 C17 47 21 30 33 24 C37 22 38.5 17 39.5 13.5 L40.6 4 L45.6 9.2 C47.6 8.4 49.4 8.4 50.6 9 L53.4 3.6 L53.8 11 C56 12.6 57.6 15 57 17.2 C55.4 18.8 52.6 19.6 50.8 20.6 C52 26 55.6 31.6 55.4 40 C55.2 47.6 56.2 54 58.4 58 Z"/><path d="M26 57.6 C12 59.4 5.6 52.4 9.4 44.6 C10.6 42.6 13 43.6 12 45.8 C9.8 51 14.2 55.2 27 54.6 Z"/></g></svg>');
+const PLACEHOLDER = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#ececf0"/><g transform="translate(8.01 9.31) scale(.6632)" fill="#b8b8bf"><path d="M24 58 C17 47 21 30 33 24 C37 22 38.5 17 39.5 13.5 L40.6 4 L45.6 9.2 C47.6 8.4 49.4 8.4 50.6 9 L53.4 3.6 L53.8 11 C56 12.6 57.6 15 57 17.2 C55.4 18.8 52.6 19.6 50.8 20.6 C52 26 55.6 31.6 55.4 40 C55.2 47.6 56.2 54 58.4 58 Z"/><path d="M26 57.6 C12 59.4 5.6 52.4 9.4 44.6 C10.6 42.6 13 43.6 12 45.8 C9.8 51 14.2 55.2 27 54.6 Z"/></g></svg>');
 const petPhoto = p => p.photo || DEFAULT_PHOTO[p.id] || PLACEHOLDER;
 
 // 讀回貓咪資料：逐項驗證，不合格的丟棄；舊版資料自動轉換
@@ -2145,6 +2164,7 @@ function timeChip(obj, save, label){
 /* ===== 長按選單（取代編輯按鈕） ===== */
 const ICON_PEN = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M11.2 2.3a1.6 1.6 0 0 1 2.3 2.3L5.6 12.5 2.5 13.5l1-3.1z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
 const ICON_TRASH = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.8 4.2h10.4M6.2 4.2V2.8h3.6v1.4M4.2 4.2l.7 9h6.2l.7-9M6.7 6.6v4.4M9.3 6.6v4.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICON_CAM_BADGE = '<svg width="12" height="12" viewBox="0 0 18 18" aria-hidden="true"><path d="M6.3 3.5h5.4l1.2 1.8H15a1.5 1.5 0 0 1 1.5 1.5v6.7A1.5 1.5 0 0 1 15 15H3a1.5 1.5 0 0 1-1.5-1.5V6.8A1.5 1.5 0 0 1 3 5.3h2.1z" fill="currentColor"/><circle cx="9" cy="10" r="3.4" fill="#fff"/><circle cx="9" cy="10" r="1.9" fill="currentColor"/></svg>';
 const ICON_PHOTO = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5.5h2.3L5.6 3.5h4.8l1.3 2H14v7.5H2z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="9" r="2.3" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
 const ICON_HELP = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 6.1a2.1 2.1 0 1 1 3 1.9c-.6.3-1 .8-1 1.5v.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="12.1" r=".95" fill="currentColor"/></svg>';
 const ICON_TAG = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 2.5h5l6 6-5 5-6-6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5.4" cy="5.4" r="1" fill="currentColor"/></svg>';
@@ -2228,7 +2248,6 @@ let renameTask = null, renamingPet = false;
 
 function petMenu(pet){
   const main = () => [
-    {icon:ICON_PHOTO, label:"更換照片", run(){ closeCtx(); petPhotoInput.click(); }},
     {icon:ICON_PEN, label:"重新命名", run(){ closeCtx(); renamingPet = true; renderCare(); }},
     {icon:ICON_TAG, label:breedName(pet.breed) ? `品種：${breedName(pet.breed)}` : "品種", more:true, run(b, fill){ fill(breeds(), 1); }},
     ...(pets.length > 1 ? [{sep:true}, {icon:ICON_TRASH, label:"刪除這隻貓", danger:true, run(b){ confirmTwice(b, "再按一次確認刪除", () => {
@@ -2273,12 +2292,18 @@ function renderCare(){
   const done = pet.tasks.filter(t => checks.data[`${pet.id}:${t.id}`]).length;
   const menu = el("div", {class:"pet-menu", role:"menu", hidden:true});
   let lpFired = false;
+  // 頭像：獨立的圓形按鈕，右下角常駐相機標記，點一下就換照片
+  const avBtn = el("button", {type:"button", class:"pet-avbtn", "aria-label":`更換${pet.name}的照片`, title:"更換照片",
+      onclick: e => { e.stopPropagation(); closeMenu(); petPhotoInput.click(); }},
+    el("img", {class:"pet-av", src:petPhoto(pet), alt:"", width:40, height:40, draggable:"false"}),
+    svgSpan("av-badge", ICON_CAM_BADGE));
+  avBtn.addEventListener("contextmenu", e => e.preventDefault());
+  // 名字膠囊：點一下切換貓咪，長按改名／品種／刪除
   const sw = el("button", {type:"button", class:"pet-switch", "aria-haspopup":"menu", "aria-expanded":"false",
       onclick: e => { e.stopPropagation(); if(lpFired){ lpFired = false; return; } if(menu.hidden){ menu.hidden = false; sw.setAttribute("aria-expanded", "true"); } else closeMenu(); }},
-    el("img", {class:"pet-av", src:petPhoto(pet), alt:"", width:40, height:40}),
     el("span", {class:"pet-id"}, el("b", {text:pet.name}), (breedName(pet.breed) ? el("small", {text:breedName(pet.breed)}) : null)),
     svgSpan("chev", ICON_CHEVRON));
-  // 長按貓咪：更換照片、重新命名、品種、刪除
+  // 長按名字：重新命名、品種、刪除
   sw.addEventListener("pointerdown", e => {
     if(e.button > 0 || !e.isPrimary) return;
     lpFired = false;
@@ -2322,10 +2347,11 @@ function renderCare(){
       }}, svgSpan("plus", ICON_PLUS), el("span", {text:"新增貓咪"})));
   let head;
   if(renamingPet){
-    head = el("div", {class:"pet-switch renaming"},
-      el("img", {class:"pet-av", src:petPhoto(pet), alt:"", width:40, height:40}),
-      inlineInput(pet.name, 12, "貓咪名字", v => { renamingPet = false; if(v){ pet.name = v; savePets(); } careAnim = {type:"breed"}; renderCare(); }));
-  } else head = el("div", {class:"pet-switch-wrap"}, sw, menu);
+    head = el("div", {class:"pet-head"},
+      el("span", {class:"pet-avbtn still"}, el("img", {class:"pet-av", src:petPhoto(pet), alt:"", width:40, height:40})),
+      el("div", {class:"pet-switch renaming"},
+        inlineInput(pet.name, 12, "貓咪名字", v => { renamingPet = false; if(v){ pet.name = v; savePets(); } careAnim = {type:"breed"}; renderCare(); })));
+  } else head = el("div", {class:"pet-head"}, avBtn, el("div", {class:"pet-switch-wrap"}, sw, menu));
   // 「?」：重播操作教學（不用文字提示，想看再按）
   const help = el("button", {type:"button", class:"help-btn" + (beckon ? " beckon" : ""), "aria-label":"操作教學", title:"操作教學"}, svgSpan("help-ico", ICON_HELP));
   help.addEventListener("click", e => { e.stopPropagation(); replayTour(); });
@@ -2379,12 +2405,14 @@ function renderCare(){
 
   if(careAnim && !reduceMotion()){
     if(careAnim.type === "switch"){
-      bar.querySelector(".pet-switch").classList.add("swap-in");
+      bar.querySelector(".pet-head").classList.add("swap-in");
       [...ul.children].forEach((li, i) => { li.classList.add("row-in"); li.style.setProperty("--i", i); });
     } else if(careAnim.type === "add"){
       const nl = ul.querySelector(`li[data-id="${careAnim.id}"]`); if(nl) nl.classList.add("row-add");
-    } else if(careAnim.type === "photo" || careAnim.type === "breed"){
-      bar.querySelector(".pet-switch").classList.add("swap-in");
+    } else if(careAnim.type === "photo"){
+      bar.querySelector(".pet-avbtn").classList.add("photo-in");
+    } else if(careAnim.type === "breed"){
+      bar.querySelector(".pet-head").classList.add("swap-in");
     }
   }
   careAnim = null;
@@ -3068,7 +3096,8 @@ function playDragHint(force, which = "care"){
     timers.forEach(clearTimeout);
     hintAnims.forEach(x => { try{ x.cancel(); }catch(e){} });
     dot.remove(); if(a) a.classList.remove("hinting", "ctx-on");
-    const sw0 = card.querySelector(".pet-switch"); if(sw0){ sw0.classList.remove("ctx-on", "hint-host"); }
+    const sw0 = card.querySelector(".pet-switch"); if(sw0) sw0.classList.remove("ctx-on", "hint-host");
+    const av0 = card.querySelector(".pet-avbtn"); if(av0) av0.classList.remove("tapped", "hint-host");
     if(menu){ menu.classList.add("closing"); const m = menu; menu = null; setTimeout(() => m.remove(), 180); }
     veil.classList.remove("on"); card.classList.remove("spot-on");
     document.removeEventListener("pointerdown", cleanup, true);
@@ -3134,13 +3163,18 @@ function playDragHint(force, which = "care"){
     at(T1 + 650, () => { a.classList.add("ctx-on"); menu = fakeMenu(a, which === "rem" ? [[ICON_PEN, "重新命名"], "sep", [ICON_TRASH, "刪除", true]] : [[ICON_PEN, "重新命名"], [ICON_NOTIME, "清除時間"], "sep", [ICON_TRASH, "刪除", true]]); });
     at(T1 + 650 + 1700, () => { liftDot(); closeFake(); a.classList.remove("ctx-on"); });
   }
-  // 第三段：長按頭像，跳出換照片、改名、品種
-  const sw = cfg.avatar ? card.querySelector(".pet-switch") : null, av = sw && sw.querySelector(".pet-av");
+  // 第三段：點頭像右下角的相機 → 換照片；第四段：長按名字 → 改名、品種
+  const sw = cfg.avatar ? card.querySelector(".pet-switch") : null, av = cfg.avatar ? card.querySelector(".pet-avbtn:not(.still)") : null, nm = sw && sw.querySelector(".pet-id b");
   const T2 = a ? T1 + 650 + 1700 + 600 : T1;
-  if(sw && av){
-    at(T2, () => { const sr = sw.getBoundingClientRect(), vr = av.getBoundingClientRect(); sw.classList.add("hint-host"); pressAt(sw, vr.left - sr.left + vr.width / 2); dot.style.top = (vr.top - sr.top + vr.height / 2) + "px"; });
-    at(T2 + 650, () => { sw.classList.add("ctx-on"); menu = fakeMenu(sw, [[ICON_PHOTO, "更換照片"], [ICON_PEN, "重新命名"], [ICON_TAG, "品種", false, true]]); });
-    at(T2 + 650 + 1900, () => { liftDot(); cleanup(); });
+  if(sw && av && nm){
+    const T3 = T2 + 1900;
+    at(T2, () => { const ar2 = av.getBoundingClientRect(), br = av.querySelector(".av-badge").getBoundingClientRect(); av.classList.add("hint-host"); pressAt(av, br.left - ar2.left + br.width / 2); dot.style.top = (br.top - ar2.top + br.height / 2) + "px"; });
+    at(T2 + 350, () => { av.classList.add("tapped"); });
+    at(T2 + 750, () => { av.classList.remove("tapped"); liftDot(); });
+    at(T2 + 1100, () => { av.classList.remove("hint-host"); });
+    at(T3, () => { const sr = sw.getBoundingClientRect(), nr = nm.getBoundingClientRect(); sw.classList.add("hint-host"); pressAt(sw, nr.left - sr.left + nr.width / 2); dot.style.top = (nr.top - sr.top + nr.height / 2) + "px"; });
+    at(T3 + 650, () => { sw.classList.add("ctx-on"); menu = fakeMenu(sw, [[ICON_PEN, "重新命名"], [ICON_TAG, "品種", false, true]]); });
+    at(T3 + 650 + 1900, () => { liftDot(); cleanup(); });
   } else at(T2, cleanup);
   return finished;
 }
